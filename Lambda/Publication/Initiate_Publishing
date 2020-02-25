@@ -1,0 +1,62 @@
+const AWS = require('aws-sdk');
+const ddb = new AWS.DynamoDB.DocumentClient();
+const ses = new AWS.SES({region: 'eu-west-1'});
+const querystring = require('querystring');
+
+exports.handler = (event, context, callback) => {    
+    if (typeof event.topic != "undefined"){
+        var topic = querystring.escape(event.topic);
+
+        var params = { 
+            TableName: 'Subscriptions',
+            ProjectionExpression: "#topic, Email",
+            FilterExpression: '#topic = :value',
+            ExpressionAttributeNames: {
+                "#topic": topic,
+            },
+            ExpressionAttributeValues: {
+                ":value" : true,
+            },
+        };
+        // exports.handler = (event, context, callback) => {    
+        console.log("Scanning Subscriptions table for " + topic);
+        ddb.scan(params, function onScan(err, data){
+            if (err) {
+                console.log("ERROR" + err);
+                console.error("Unable to scan the table. Error JSON:", JSON.stringify(err, null, 2));
+            } else {
+                // print all the matching subscribers
+                console.log("Dynamo Results: " + data.Items.length, " matches found");
+                callback(null, "Publishing Initiated Successfully for.........." + topic);
+                data.Items.forEach(function(user) {
+                    console.log(user.Email);
+                    // Constructing Email
+                    var sesparams = {
+                        Destination: {
+                            ToAddresses: ["l00073976@student.lyit.ie"]
+                        },
+                        Message: {
+                            Body: {
+                                Text: { Data: "Test" }
+                            },
+                            Subject: { Data: "user.Email" }
+                        },
+                        Source: "l00073976@student.lyit.ie"
+                    };
+                    // Calling SES to Send the Email
+                    ses.sendEmail(sesparams, function (err, data) {
+                        callback(null, {err: err, data: data});
+                        if (err) {
+                            console.log(err);
+                            context.fail(err);
+                        } else {
+                            console.log(data);
+                            console.log("Email sent to " + user.Email);
+                            context.succeed(event);
+                        }
+                    });    
+                });  
+            }    
+        });
+    }
+};
