@@ -17,8 +17,7 @@ exports.handler = (event, context, callback) => {
             ExpressionAttributeValues: {
                 ":value" : true,
             },
-        };
-        // exports.handler = (event, context, callback) => {    
+        };   
         console.log("Scanning Subscriptions table for " + topic);
         ddb.scan(params, function onScan(err, data){
             if (err) {
