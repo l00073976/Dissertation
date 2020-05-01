@@ -1,0 +1,25 @@
+// Load the AWS SDK for Node.js
+var AWS = require('aws-sdk');
+
+var cloudwatchlogs = new AWS.CloudWatchLogs();
+
+exports.handler = function (event, context, callback) {
+  var params_describeLogStreams = {
+  logGroupNamePrefix: '/aws'
+  };    
+  cloudwatchlogs.describeLogGroups(params_describeLogStreams, function(err, data) {
+    var subResult = "describeLogStreams Successful";
+    if (err) {
+      console.log("Error", err);
+      subResult = "describeLogStreams error";
+    } else {
+      console.log("Success", data);
+      subResult = "All Log Groups Returned";
+    }
+      var response = {
+        statusCode: 200,
+        result: subResult
+      };
+      callback(null, response);   
+  });
+};

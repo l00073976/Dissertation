@@ -1,0 +1,26 @@
+var AWS = require('aws-sdk');
+
+var cloudwatchlogs = new AWS.CloudWatchLogs();
+
+exports.handler = function (event, context, callback) {
+  var params_getLogEvents = {
+    logGroupName: '/aws/lambda/Create_Subscription', 
+    limit: '10',
+    logStreamName: '2020/04/01/[$LATEST]2646a97f08e240cbba4a7037432a6510'
+  };
+  cloudwatchlogs.getLogEvents(params_getLogEvents, function(err, data) {  
+    var subResult = "GetLogEvents Successful";
+      if (err) {
+        console.log("Error", err);
+        subResult = "GetLogEvents error";
+      } else {
+        console.log("Success", data);
+        subResult = "Individual Log Events returned";
+      }
+      var response = {
+        statusCode: 200,
+        result: subResult
+      };
+      callback(null, response);   
+  });
+};
