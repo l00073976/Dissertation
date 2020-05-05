@@ -1,0 +1,37 @@
+// Load the AWS SDK for Node.js
+var AWS = require('aws-sdk');
+
+var cloudwatch = new AWS.CloudWatch();
+
+exports.handler = function (event, context, callback) {
+var params = {
+  Dimensions: [
+    {
+      Name: 'TableName' /* required */
+//      Value: ''
+    },
+  ],
+//  MetricName: '',
+  Namespace: 'AWS/DynamoDB'
+//  NextToken: ''
+};
+cloudwatch.listMetrics(params, function(err, data) {
+//cloudwatchlogs.getLogEvents(params, function(err, data) {
+  var subResult = "GetLogEvents Successful";
+  if (err) {
+    console.log("Error", err);
+    subResult = "GetLogEvents error";
+  } else {
+    console.log("Success", data);
+    subResult = "GetLogEvents updated";
+  }
+      
+      // create a response
+    var response = {
+      statusCode: 200,
+      body: JSON.stringify(params.Item),
+      result: subResult
+    };
+    callback(null, response);   
+    });
+};
